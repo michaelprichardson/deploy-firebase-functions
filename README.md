@@ -1,4 +1,4 @@
-# deploy-firebase-functions# deploy-firebase-functions CLI 🚀
+# deploy-firebase-functions CLI 🚀
 
 [![license](https://img.shields.io/npm/v/deploy-firebase-functions)](https://www.npmjs.com/package/deploy-firebase-functions)
 [![license](https://img.shields.io/github/license/michaelprichardson/deploy-firebase-functions)](https://github.com/michaelprichardson/deploy-firebase-functions/blob/master/LICENSE)

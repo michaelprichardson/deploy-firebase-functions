@@ -28,7 +28,3 @@ Below is a brief list of the available commands and their function:
 | max  |The max number of functions to run in each deploy (Default 10)|
 | pause |The time to wait bewteen each deploy in ms (Default 2500ms)|
 | help |Show the help dialog|
-
-### Contributions
-
-I encourage you to submit a PR extending the functionality or submit an issue requesting something!

@@ -9,13 +9,15 @@ function sleep(ms) {
 
 async function runDeployCommands(args) {
     if (args.h || args.help) {
-        console.log('Use the argument --index to provide the file that exports the Firebase functions. If no supplied it defaults to functions/index.js');
+        console.log('Available arguments');
+        console.log('   --index (string) This is the file exporting all the files for Firebase. Defaults to functions/index.js');
+        console.log('   --max (int) This is the maximum number of functions to deploy at once. Defaults to 10');
         console.log(chalk.red('Note: Typescript is not supported'));
         return;
     }
 
     var filePath = 'functions/index.js';
-    var maxFuncs = 2;
+    var maxFuncs = 5;
     var pause = 2500;
     if (args.index) {
         filePath = argv.index;

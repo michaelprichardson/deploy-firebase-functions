@@ -12,7 +12,7 @@ You can install the deploy-firebase-functions CLI using npm (the Node Package Ma
 
 To download and install the CLI run the following command:
 ```sh
-npm install -g firebase-tools
+npm install -g deploy-firebase-functions
 ```
 This will provide you with the globally accessible `deploy-firebase-functions` command.
 

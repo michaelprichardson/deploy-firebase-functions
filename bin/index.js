@@ -1,57 +1,63 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const indexFile = `${process.cwd()}/index.ts`
-console.log('Using file:', indexFile);
-console.log();
+const chalk = require('chalk');
+var argv = require('minimist')(process.argv.slice(2));
+var shell = require('shelljs');
 
-if (!fs.existsSync(indexFile)) {
-    console.log(`File (${indexFile}) does not exist`);
-    return;
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-try {
-    // read contents of the file
-    const data = fs.readFileSync(indexFile, 'UTF-8');
-
-    // split the contents by new line
-    const lines = data.split(/\r?\n/);
-    const functions = [];
-
-    // print all lines
-    lines.forEach((line) => {
-        if (line.includes('export')) {
-            const matches = line.match(/(?<=\{).+?(?=\})/g) || [];
-            if (matches.length > 0) {
-                const ex = matches[0].trim().split(',') || [];
-                if (ex.length > 0) {
-                    ex.forEach(e => {
-                        if (e.includes(' as ')) {
-                            functions.push(e.split(' as ')[1].trim());
-                        } else {
-                            functions.push(e.trim());
-                        }
-                    });
-                }
-            }
-        }
-    });
-
-    console.log('Number of functions:', functions.length);
-    const firebaseCmd = 'firebase deploy --only ';
-    let cmd = firebaseCmd;
-    for (const [idx, func] of functions.entries()) {
-        // console.log('Add', idx);
-        cmd += `functions:${func}`;
-
-        if ((idx + 1) % 10 == 0 || idx + 1 == functions.length) {
-            console.log('Uploading functions...');
-            console.log(cmd);
-            console.log();
-            cmd = firebaseCmd;
-        } else {
-            cmd += ',';
-        }
+async function runDeployCommands(args) {
+    if (args.h || args.help) {
+        console.log('Use the argument --index to provide the file that exports the Firebase functions. If no supplied it defaults to functions/index.js');
+        console.log(chalk.red('Note: Typescript is not supported'));
+        return;
     }
-} catch (err) {
-    console.error(err);
+
+    var filePath = 'functions/index.js';
+    var maxFuncs = 2;
+    var pause = 2500;
+    if (args.index) {
+        filePath = argv.index;
+    }
+
+    if (args.max) {
+        maxFuncs = argv.max;
+    }
+
+    console.log('Processing functions in: ' + chalk.magenta(filePath));
+
+    const imports = require(filePath);
+    const funcNames = Object.keys(imports);
+
+    console.log(`There ${funcNames.length === 1 ? 'is' : 'are'} ${chalk.magenta(funcNames.length)} function${funcNames.length === 1 ? '' : 's'} to deploy to Firebase!`);
+
+    const deployCmd = 'firebase deploy --only ';
+    const funcCmd = 'functions:';
+
+    var ii, jj, cmd = '';
+    for (ii = 0, jj = funcNames.length; ii < jj; ii += maxFuncs) {
+        const groupedNames = funcNames.slice(ii, ii + maxFuncs);
+
+        for (var idx = 0; idx < groupedNames.length; idx++) {
+            cmd += `${funcCmd}${groupedNames[idx]}${idx < groupedNames.length-1 ? ',' : ''}`;
+        }
+        const executeCommand = `${deployCmd}${cmd}`;
+        console.log(`${chalk.magenta('Execute command:')} ${executeCommand}`);
+        console.log(`${chalk.magenta('Firebase output: ')}`);
+        const response = shell.exec(executeCommand);
+        if (response.code !== 0) {
+            return;
+        }
+        
+        cmd = '';
+
+        if (ii < funcNames.length - 1) {
+            console.log(`Pausing for ${pause}ms`);
+            await sleep(2500);
+        }
+        
+    }
 }
+
+runDeployCommands(argv);

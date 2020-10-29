@@ -1,13 +1,13 @@
 {
   "name": "deploy-firebase-functions",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "A quick and easy way to deploy multiple Firebase functions using one command",
   "main": "bin/index.js",
   "bin": {
     "deploy-firebase-functions": "bin/index.js"
   },
   "scripts": {
-    "deploy": "node index.js"
+    "deploy": "npm publish --access=public"
   },
   "repository": {
     "type": "git",

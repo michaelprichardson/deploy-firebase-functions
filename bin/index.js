@@ -36,7 +36,7 @@ async function runDeployCommands(args) {
         pause = argv.pause;
     }
 
-    console.log(`Deploying all functions at once and will retry until successful (max retries: ${maxRetries})`);
+    console.log(chalk.magenta(`Deploying all functions at once and will retry until successful (max retries: ${maxRetries})`));
 
     const errorRegex = /(?<=\[)(.*?)(?=\(.*?\)\]: Deployment error.)/g;
     const commandRegex = /firebase deploy --only \".*\"/;
@@ -52,13 +52,13 @@ async function runDeployCommands(args) {
             response = shell.exec(command[0]);
             firebaseOutput = response.stdout.match(errorRegex) || [];
         } else {
-            console.log('Couldn\'t find any error with the deploy, exiting.');
+            console.log(chalk.red('Couldn\'t find any error with the deploy, exiting.'));
             return;
         }
         count += 1;
 
         if (count >= maxRetries) {
-            console.log('Hit maximum retries, exiting.');
+            console.log(chalk.red('Hit maximum retries, exiting.'));
             return
         }
     }

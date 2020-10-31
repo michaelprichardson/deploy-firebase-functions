@@ -24,8 +24,7 @@ Below is a brief list of the available commands and their function:
 
 | Command  | Description  |
 |---|---|
-| retry | If this is set to try then all of the functions will be deployed and the CLI will try until there are no errors (Default true, with max retries 10) |
-| index | This is used to set the path of the index.js file (TypeScript not supported yet) that exports the functions from the current working directory (Default `functions/index.js`) |
+| delete | This will add the flag `--force` to the Firebase deploy command (Default false) |
 | max  | The max number of functions to run in each deploy (Default 10) |
 | pause | The time to wait between each deploy in ms (Default 2500ms) |
 | help | Show the help dialog |

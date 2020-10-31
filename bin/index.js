@@ -2,7 +2,6 @@
 const chalk = require('chalk');
 var argv = require('minimist')(process.argv.slice(2));
 var shell = require('shelljs');
-var path = require('path');
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -41,18 +40,18 @@ async function runDeployCommands(args) {
     const errorRegex = /(?<=\[)(.*?)(?=\(.*?\)\]: Deployment error.)/g;
     const commandRegex = /(firebase deploy --only \".*\")/g;
     var response = shell.exec(`firebase deploy --only functions ${forceDelete ? '--force ' : ''}`);
-    var firebaseOutput = response.stderr.match(errorRegex) || [];
+    var firebaseOutput = response.stdout.match(errorRegex) || response.stderr.match(errorRegex) || [];
     var count = 0
 
     while (firebaseOutput.length > 0) {
         // Get the command to execute provided by Firebase
-        const command = textResponse.match(commandRegex) || [];
+        const command = response.stdout.match(commandRegex) || response.stderr.match(commandRegex) || [];
         if (command.length > 0) {
             await sleep(pause);
             response = shell.exec(command[0]);
-            firebaseOutput = response.stderr.match(errorRegex) || [];
+            firebaseOutput = response.stdout.match(errorRegex) || response.stderr.match(errorRegex) || [];
         } else {
-            log('Couldn\'t find any errors with the deploy, exiting.');
+            log(`Couldn't find any errors with the deploy, exiting. [${response.code}]`);
             return;
         }
         count += 1;
@@ -63,7 +62,7 @@ async function runDeployCommands(args) {
         }
     }
 
-    log('Deploy was successful, exiting.');
+    log(`Deploy was successful, exiting. [${response.code}]`);
     return;
 }
 

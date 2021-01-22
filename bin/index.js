@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const chalk = require('chalk');
 var argv = require('minimist')(process.argv.slice(2));
 var shell = require('shelljs');
 
@@ -9,65 +8,52 @@ function sleep(ms) {
 
 async function runDeployCommands(args) {
     if (args.h || args.help) {
-        log('');
         console.log();
-        console.log('available arguments:');
-        console.log('   --delete (boolean) This will add the flag `--force` to the Firebase deploy command (Default false)');
-        console.log('   --max (int) This is the maximum number of functions to deploy at once. Defaults to 10 (Max 10)');
-        console.log('   --pause (int) This is the time (ms) to wait between each deploy. Defaults to 2500ms');
+        console.log('Available arguments:');
+        console.log('   --pause (int) This is the time (ms) to wait between each deploy. Defaults to 10000ms');
+        console.log('   --cmd (string) The command to run in firebase deploy. Defaults to "--deploy"');
         console.log();
-        console.log(chalk.red('Note: Typescript is not supported'));
         return;
     }
 
     // Assign the variables needed
-    var forceDelete = false;
-    var maxRetries = 10;
-    var pause = 2500;
+    var cmd = 'deploy';
+    var pause = 10000;
 
-    if (args.delete) {
-        forceDelete = argv.delete;
-    }
-    if (args.max) {
-        maxRetries = min(argv.max, 10);
+    if (args.cmd) {
+        cmd = argv.cmd;
     }
     if (args.pause) {
         pause = argv.pause;
     }
 
-    log(`Deploying all functions at once and will retry until successful (max retries: ${maxRetries})`);
+    let command = `firebase ${cmd}`;
+    console.log(`Running command: ${command}`);
 
-    const errorRegex = /(?<=\[)(.*?)(?=\(.*?\)\]: Deployment error.)/g;
-    const commandRegex = /(firebase deploy --only \".*\")/g;
-    var response = shell.exec(`firebase deploy --only functions ${forceDelete ? '--force ' : ''}`);
-    var firebaseOutput = response.stdout.match(errorRegex) || response.stderr.match(errorRegex) || [];
-    var count = 0
+    let response = shell.exec(command);
+    // Get the output from the command
+    const errorMessage = response.stdout || response.stderr || '';
 
-    while (response.code !== 0 && firebaseOutput.length > 0) {
-        // Get the command to execute provided by Firebase
-        const command = response.stdout.match(commandRegex) || response.stderr.match(commandRegex) || [];
-        if (command.length > 0) {
-            await sleep(pause);
-            response = shell.exec(command[0]);
-            firebaseOutput = response.stdout.match(errorRegex) || response.stderr.match(errorRegex) || [];
-        } else {
-            log(`Couldn't find any errors with the deploy, exiting. [${response.code}]`);
-            return;
-        }
-        count += 1;
+    // Find if there is a match for the firebase functions deploy error
+    // TODO: This could be in a loop until there is nothing in the match
+    const functionDeployErrorRegex = /(firebase deploy--only\ ".*\")/g;
+    const errorMatch = errorMessage.match(functionDeployErrorRegex) || [];
+    if (errorMatch.length > 0) {
+        command = errorMatch[0];
+        console.log('There was an error deploying');
 
-        if (count >= maxRetries) {
-            log('Reached maximum retries, exiting.');
-            return
-        }
+        // Wait a bit before running the command again
+        await sleep(pause);
+        console.log(`Running command: ${command}`);
+        response = shell.exec(command);
     }
 
-    log(`Deploy was successful, exiting. [${response.code}]`);
+    if (response.code === 0) {
+        console.log(`Deploy was successful 🚀, exiting [${response.code}]`);
+    } else {
+        console.log(`Deploy failed ❌, exiting [${response.code}]`);
+    }
     return;
-}
-
-function log(message) {
-    console.log(chalk.magenta('deploy-firebase-functions 🚀: ') + message);
 }
 
 runDeployCommands(argv);

@@ -1,6 +1,6 @@
 {
   "name": "deploy-firebase-functions",
-  "version": "1.2.6",
+  "version": "1.3.0",
   "description": "A quick and easy way to deploy multiple Firebase functions using one command",
   "main": "bin/index.js",
   "bin": {
@@ -25,7 +25,6 @@
   },
   "homepage": "https://github.com/michaelprichardson/deploy-firebase-functions#readme",
   "dependencies": {
-    "chalk": "^4.1.0",
     "minimist": "^1.2.5",
     "shelljs": "^0.8.4"
   }
